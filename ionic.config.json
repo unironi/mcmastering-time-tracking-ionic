@@ -1,0 +1,7 @@
+{
+  "name": "mcmaster-time-tracker-ionic",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
