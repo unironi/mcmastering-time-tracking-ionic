@@ -2,6 +2,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "types": ["jest"],
     // "baseUrl": "./",
     "paths": {
       "@app/*": ["./src/app/*"],

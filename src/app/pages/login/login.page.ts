@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-// import { CommonModule } from '@angular/common';
+ import { CommonModule } from '@angular/common';
  import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertController, LoadingController } from '@ionic/angular';
-// import { IonButton, IonContent, IonHeader, IonInput, IonItem, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+ import { IonButton, IonContent, IonHeader, IonInput, IonItem, IonTitle, IonToolbar } from '@ionic/angular/standalone';
 import { SupabaseService } from '@app/services/supabase';
 
 @Component({
@@ -11,18 +11,18 @@ import { SupabaseService } from '@app/services/supabase';
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
   standalone: true,
-  // imports: [
-  //   CommonModule,
-  //   FormsModule,
-  //   ReactiveFormsModule,
-  //   IonContent,
-  //   IonHeader,
-  //   IonToolbar,
-  //   IonTitle,
-  //   IonItem,
-  //   IonInput,
-  //   IonButton
-  // ]
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    IonContent,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonItem,
+    IonInput,
+    IonButton
+  ]
 })
 
 export class LoginPage implements OnInit {

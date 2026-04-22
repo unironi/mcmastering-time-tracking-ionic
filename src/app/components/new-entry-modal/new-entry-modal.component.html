@@ -1,0 +1,37 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>New Entry</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">Cancel</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-label>Category</ion-label>
+    <ion-select [(ngModel)]="category">
+      @for (cat of (categories$ | async); track cat) {
+        <ion-select-option value="${cat.name}" >{{ cat.name }}</ion-select-option>
+      }
+    </ion-select>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Role</ion-label>
+    <ion-select [(ngModel)]="role">
+      @for (role of (roles$ | async); track role) {
+        <ion-select-option value="${role.name}" >{{ role.name }}</ion-select-option>
+      }
+    </ion-select>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Hours</ion-label>
+    <ion-input slot="end" type="number" [(ngModel)]="hours" min="0"></ion-input>
+  </ion-item>
+
+  <ion-footer class="ion-padding">
+    <ion-button expand="full" (click)="confirm()">Add</ion-button>
+  </ion-footer>
+</ion-content>

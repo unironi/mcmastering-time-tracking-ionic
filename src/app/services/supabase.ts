@@ -4,13 +4,50 @@ import { createClient, SupabaseClient, User } from "@supabase/supabase-js";
 import { BehaviorSubject } from 'rxjs';
 import { environment } from '@env/environment';
 
+export interface Entry {
+  id: string;
+  user_id: string;
+  group_id: string;
+  role_id: string;
+  hours: number;
+  created_at: string;
+  updated_at: string;  
+}
+
+export interface Category {
+  id: string,
+  group_id: string,
+  category_name: string,
+  created_by: string,
+  created_at: string
+}
+
+export interface Role {
+  id: string,
+  category_id: string,
+  role_name: string,
+  weight: number,
+  created_by: string,
+  created_at: string
+}
+
+const ENTRIES = 'entries';
+const CATEGORIES = 'categories';
+const ROLES = 'roles';
+const GROUP_MEMBERS = 'group_members';
+
 @Injectable({
   providedIn: 'root',
 })
+
 export class SupabaseService {
   supabase: SupabaseClient;
+  entriesSubscribed: boolean = false;
+
   private _currentUser: BehaviorSubject<any> = new BehaviorSubject(null);
   private _entries: BehaviorSubject<any> = new BehaviorSubject([]);
+  private _categories: BehaviorSubject<any> = new BehaviorSubject([]);
+  private _roles: BehaviorSubject<any> = new BehaviorSubject([]);
 
   constructor(private router: Router) {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey, {
@@ -26,12 +63,13 @@ export class SupabaseService {
       if (event == 'SIGNED_IN') {
         this._currentUser.next(session?.user);
         this.loadEntries();
-        this.handleEntriesChange();
       } else {
         this._currentUser.next(false);
       }
     })
   }
+
+  // Registration functions
 
   async signUp(credentials: { email: any, password: any }) {
     return new Promise(async (resolve, reject) => {
@@ -53,21 +91,53 @@ export class SupabaseService {
     await this.supabase.auth.signOut();
 
     this.supabase.removeAllChannels(); // remove's all of client's subscriptions
+    this.entriesSubscribed = false;
 
     this.router.navigateByUrl('/');
+  }
+
+  // Getters
+
+  get categories() {
+    return this._categories.asObservable();
+  }
+
+  get roles() {
+    return this._roles.asObservable();
   }
 
   get entries() {
     return this._entries.asObservable();
   }
 
+  get currentUser() {
+    return this._currentUser.asObservable();
+  }
+
+  // fetch updates
+
+  async loadCategories() {
+    const query = await this.supabase.from(CATEGORIES).select('*');
+    console.log(query.data);
+    this._categories.next(query.data);
+  }
+
+  async loadRoles() {
+    const query = await this.supabase.from(ROLES).select('*');
+    console.log(query.data);
+    this._roles.next(query.data);
+  }
+
   async loadEntries() {
-    const query = await this.supabase.from('entries').select('*');
+    const query = await this.supabase.from(ENTRIES).select('*');
     console.log(query.data);
     this._entries.next(query.data);
   }
 
-  async addEntry(task: string) {
+  // CRUD functions
+
+  // entries
+  async addEntry(role_id: string, hours: number) {
     const user_id = await this.supabase.auth.getUser();
 
     if (user_id.error) {
@@ -77,22 +147,47 @@ export class SupabaseService {
 
     const newEntry = {
       user_id: user_id.data.user?.id,
-      task
+      role_id,
+      hours
     }
 
-    const result = await this.supabase.from('entries').insert(newEntry);
+    const result = await this.supabase.from(ENTRIES).insert(newEntry);
   }
 
   async removeEntry(id: any) {
-    await this.supabase.from('entries').delete().match(id);
+    await this.supabase.from(ENTRIES).delete().match({ id });
   }
 
   async updateEntry(id: any, hours: number) {
-    await this.supabase.from('entries').update({ hours }).match(id);
+    await this.supabase.from(ENTRIES).update({ hours }).match({ id });
   }
   
   handleEntriesChange() {
+    if (this.entriesSubscribed) return;
 
+    console.log('subscribing...');
+
+    this.supabase
+    .channel('db-changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'entries'
+      },
+      (payload) => {
+        console.log(payload);
+        this.loadEntries();
+      }
+    )
+    .subscribe();
+
+    this.entriesSubscribed = true;
   }
+
+  // categories
+
+  // roles
   
 }
